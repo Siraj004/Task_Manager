@@ -1,0 +1,18 @@
+# Environment variables
+.env
+
+# Dependencies
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Build output (if using TypeScript build)
+dist/
+build/
+
+# OS / Editor specific
+.DS_Store
+.idea/
+.vscode/
