@@ -1,34 +1,8 @@
-# Node dependencies
-node_modules/
-
-# Production / build output
-dist/
-build/
-
-# Environment variables
-.env
-.env.local
-
-# IDE / Editor config
-.vscode/
-.idea/
-
-# OS-specific files
+# System/IDE files
 .DS_Store
-Thumbs.db
-
-# Log files
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+.vscode/
 *.log
 
-# TypeScript
-*.tsbuildinfo
-
-# Optional: lock files if you prefer not to commit them
-# package-lock.json
-# yarn.lock
-
-# Cache / temp files
-.cache/
+# Ignore everything in node_modules across the project if not handled in subfolders
+**/node_modules/
+**/.env
