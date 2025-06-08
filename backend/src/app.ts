@@ -1,7 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import authRoutes from './routers/authRouters';
+import authRoutes from './routers/authRoutes';
+import adminRoutes from './routers/adminRoutes';
+import ProjectRoutes from './routers/ProjectRoutes';
+import taskRoutes from './routers/taskRoutes';
 
 const app = express();
 
@@ -9,14 +12,18 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: 'http://localhost:3000', // React app URL
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true
 }));
 
-// Routes
-app.use('/auth', authRoutes);
+// Mount API routes under /api
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/projects', ProjectRoutes);
+app.use('/api/tasks', taskRoutes);
 
-app.get('/', (req, res) => {
+// Root route
+app.get('/', (_req, res) => {
   res.send('API is running');
 });
 

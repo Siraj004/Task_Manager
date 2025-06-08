@@ -1,37 +1,74 @@
+// FILE: frontend/src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import Login from './Login';
-import Register from './Register';
-import Landing from './Landing';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import ProjectBoard from './pages/ProjectBoard';
+import AdminDashboard from './pages/AdminDashboard';
+import TaskDetail from './pages/TaskDetail';  // Corrected import here
+import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
-  const [accessToken, setAccessToken] = React.useState('');
-
-  const handleLogin = (token) => {
-    setAccessToken(token);
-  };
-
   return (
-    <Router>
-      <nav className="p-4 bg-gray-800 text-white">
-        <Link className="mr-4" to="/login">Login</Link>
-        <Link className="mr-4" to="/register">Register</Link>
-        <Link to="/landing">Landing</Link>
-      </nav>
-      <div className="p-4">
+    <AuthProvider>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
-          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/landing"
             element={
-              accessToken ? <Landing accessToken={accessToken} /> : <Navigate to="/login" />
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
             }
           />
-          <Route path="*" element={<Navigate to="/login" />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id"
+            element={
+              <ProtectedRoute>
+                <ProjectBoard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tasks/:id"
+            element={
+              <ProtectedRoute>
+                <TaskDetail />  {/* Matches import */}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="Admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
-      </div>
-    </Router>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
