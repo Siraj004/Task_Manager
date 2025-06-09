@@ -14,9 +14,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 const allowedOrigins = [
-  'http://localhost:3000',
-  'https://task-manager-ehbh.onrender.com', // your deployed frontend
-  'https://YOUR-NEW-FRONTEND-URL.onrender.com' // add your actual deployed frontend URL if different
+   'http://localhost:3000',
+       'https://your-frontend.onrender.com'
 ];
 
 app.use(cors({
