@@ -6,6 +6,7 @@ import { authorizeRoles } from '../middlewares/roleMiddleware';
 const router = express.Router();
 
 // Admin: manage users and roles
+
 router.get('/users', verifyJWT, authorizeRoles(['Admin']), listUsers);
 router.put('/users/:id/roles', verifyJWT, authorizeRoles(['Admin']), updateUserRoles);
 

@@ -1,3 +1,4 @@
+// backend/routers/authRoutes.ts
 import express from 'express';
 import { register, login, refreshToken, logout, getProfile } from '../controllers/authController';
 import { verifyJWT } from '../middlewares/authMiddleware';
@@ -12,12 +13,7 @@ router.post('/login', login);
 router.get('/refresh-token', refreshToken);
 router.post('/logout', logout);
 
-// ✅ Add this to fix the 404
+// Get profile (requires JWT)
 router.get('/profile', verifyJWT, getProfile);
-
-// Example protected route
-router.get('/protected', verifyJWT, (req, res) => {
-  res.json({ message: `Hello, ${(req as any).user.username}! This is a protected route.` });
-});
 
 export default router;

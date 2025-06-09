@@ -1,5 +1,3 @@
-// === FRONTEND CHANGES === //
-
 // src/context/AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
@@ -14,23 +12,31 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null); // ✅ NEW
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      fetchUserProfile();
+    const storedToken = localStorage.getItem('accessToken');
+    if (storedToken) {
+      setToken(storedToken); // ✅ set token
+      fetchUserProfile(storedToken);
     } else {
       setLoading(false);
     }
   }, []);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = async (authToken) => {
     try {
-      const res = await api.get('/auth/profile');
+      const res = await api.get('/auth/profile', {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
       setUser(res.data);
     } catch (error) {
       localStorage.removeItem('accessToken');
+      setUser(null);
+      setToken(null);
     } finally {
       setLoading(false);
     }
@@ -40,6 +46,7 @@ export const AuthProvider = ({ children }) => {
     const res = await api.post('/auth/login', { username, password });
     const { accessToken, roles, permissions } = res.data;
     localStorage.setItem('accessToken', accessToken);
+    setToken(accessToken); // ✅ set token
     setUser({ username, roles, permissions });
     return res.data;
   };
@@ -51,11 +58,12 @@ export const AuthProvider = ({ children }) => {
     finally {
       localStorage.removeItem('accessToken');
       setUser(null);
+      setToken(null);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

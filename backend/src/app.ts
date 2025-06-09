@@ -1,10 +1,11 @@
+// backend/app.ts
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routers/authRoutes';
-import adminRoutes from './routers/adminRoutes';
 import ProjectRoutes from './routers/ProjectRoutes';
 import taskRoutes from './routers/taskRoutes';
+import adminRoutes from './routers/adminRoutes';
 
 const app = express();
 
@@ -16,13 +17,12 @@ app.use(cors({
   credentials: true
 }));
 
-// Mount API routes under /api
+// Mount routes
 app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
 app.use('/api/projects', ProjectRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/admin', adminRoutes);
 
-// Root route
 app.get('/', (_req, res) => {
   res.send('API is running');
 });

@@ -1,26 +1,79 @@
-// === BACKEND ===
+// ✅ FILE: src/routers/taskRoutes.ts
 
-
-
-
-// File: src/routers/taskRoutes.ts (RBAC middleware usage example)
 import express from 'express';
 import {
   createTask,
   updateTask,
   deleteTask,
   listTasks,
-  markTested
+  getTaskById,
+  markTested,
+  addComment,
 } from '../controllers/taskController';
+
 import { verifyJWT } from '../middlewares/authMiddleware';
-import { checkRole } from '../middlewares/checkRole';
+import { authorizeRoles } from '../middlewares/roleMiddleware';
 
 const router = express.Router();
 
-router.post('/', verifyJWT, checkRole('Admin', 'Project Manager'), createTask);
-router.put('/:id', verifyJWT, checkRole('Admin', 'Project Manager', 'Developer'), updateTask);
-router.delete('/:id', verifyJWT, checkRole('Admin', 'Project Manager'), deleteTask);
-router.get('/', verifyJWT, checkRole('Admin', 'Project Manager', 'Developer', 'Tester', 'Viewer'), listTasks);
-router.post('/:id/tested', verifyJWT, checkRole('Tester'), markTested);
+/**
+ * Task Routes – Role-Based Access Control (RBAC)
+ */
+
+// List All Tasks → Roles: Admin, Project Manager, Developer, Tester, Viewer
+router.get(
+  '/',
+  verifyJWT,
+  authorizeRoles(['Admin', 'Project Manager', 'Developer', 'Tester', 'Viewer']),
+  listTasks
+);
+
+// Get Task by ID → Roles: Admin, Project Manager, Developer, Tester, Viewer
+router.get(
+  '/:id',
+  verifyJWT,
+  authorizeRoles(['Admin', 'Project Manager', 'Developer', 'Tester', 'Viewer']),
+  getTaskById
+);
+
+// Create Task → Roles: Admin, Project Manager
+router.post(
+  '/',
+  verifyJWT,
+  authorizeRoles(['Admin', 'Project Manager']),
+  createTask
+);
+
+// Delete Task → Roles: Admin, Project Manager
+router.delete(
+  '/:id',
+  verifyJWT,
+  authorizeRoles(['Admin', 'Project Manager']),
+  deleteTask
+);
+
+// Update Task → Roles: Admin, Project Manager, Developer, Tester
+router.put(
+  '/:id',
+  verifyJWT,
+  authorizeRoles(['Admin', 'Project Manager', 'Developer', 'Tester']),
+  updateTask
+);
+
+// Mark Task as Tested → Roles: Admin, Tester
+router.post(
+  '/:id/tested',
+  verifyJWT,
+  authorizeRoles(['Admin', 'Tester']),
+  markTested
+);
+
+// Add Comment → Roles: Admin, Project Manager, Developer, Tester
+router.post(
+  '/:id/comments',
+  verifyJWT,
+  authorizeRoles(['Admin', 'Project Manager', 'Developer', 'Tester']),
+  addComment
+);
 
 export default router;

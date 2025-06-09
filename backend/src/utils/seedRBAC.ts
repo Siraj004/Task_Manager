@@ -1,3 +1,4 @@
+// backend/utils/seedRBAC.ts
 import { Role, Permission } from '../models';
 
 export const seedRBAC = async () => {
@@ -11,24 +12,12 @@ export const seedRBAC = async () => {
   try {
     // Create roles
     for (const roleName of roles) {
-      await Role.findOrCreate({
-        where: { name: roleName },
-        defaults: {
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      });
+      await Role.findOrCreate({ where: { name: roleName } });
     }
 
     // Create permissions
     for (const perm of permissions) {
-      await Permission.findOrCreate({
-        where: { name: perm },
-        defaults: {
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      });
+      await Permission.findOrCreate({ where: { name: perm } });
     }
 
     // Assign all permissions to Admin role

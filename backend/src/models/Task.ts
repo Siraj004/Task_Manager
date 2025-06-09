@@ -30,10 +30,21 @@ Task.init({
     allowNull: false,
     defaultValue: 'open',
   },
+  projectId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    field: 'ProjectId', // 👈 Fixes the case mismatch
+  },
+  assigneeId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'assigneeId', // 👈 Fixes the case mismatch if your DB has it as AssigneeId
+  },
 }, {
   sequelize,
   modelName: 'Task',
   tableName: 'tasks',
 });
+
 
 export default Task;
