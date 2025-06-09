@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, User, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -9,18 +9,26 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && user.roles && user.roles.length > 0) {
+      navigate('/landing', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     try {
-      await login(username, password); // sets accessToken + roles
-      navigate('/landing');
-    } catch {
+      await login(username, password);
+      // Do NOT navigate here! Let useEffect handle it.
+    } catch (err) {
       setError('Invalid credentials. Try again.');
+      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -52,6 +60,7 @@ export default function Login() {
               onChange={(e) => setUsername(e.target.value)}
               className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 placeholder-white/50 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50 transition"
               required
+              disabled={isLoading}
             />
           </div>
 
@@ -64,11 +73,13 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full pl-10 pr-10 py-3 rounded-lg bg-white/10 border border-white/20 placeholder-white/50 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50 transition"
               required
+              disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition"
+              disabled={isLoading}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>

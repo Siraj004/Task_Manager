@@ -44,10 +44,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     const res = await api.post('/auth/login', { username, password });
-    const { accessToken, roles, permissions } = res.data;
+    const { accessToken } = res.data;
     localStorage.setItem('accessToken', accessToken);
-    setToken(accessToken); // ✅ set token
-    setUser({ username, roles, permissions });
+    setToken(accessToken);
+    await fetchUserProfile(accessToken);
     return res.data;
   };
 

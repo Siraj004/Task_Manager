@@ -476,54 +476,48 @@ export default function ProjectBoard() {
     });
   };
 
-  /**
-   * Task card component for the list
-   */
+  // Task card component for the list
   const TaskCard = ({ task }) => (
     <div 
-      className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 hover:bg-white/15 transition-all duration-300 cursor-pointer"
+      className="bg-white/5 border border-white/10 rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer group"
       onClick={() => (hasPermission('view_update_tasks') || hasPermission('read_only')) ? setSelectedTask(task) : null}
     >
-      <div className="flex justify-between items-start mb-3">
-        <h3 className="text-white font-semibold text-sm">{task.title}</h3>
-        <div className="flex items-center space-x-2">
-          {hasPermission('create_edit_delete_tasks') && (
-            <button 
-              onClick={e => { e.stopPropagation(); startEditing(task); }}
-              className="p-1 hover:bg-white/10 rounded"
-              title="Edit Task"
-            ><Edit3 className="w-3 h-3 text-blue-400" /></button>
-          )}
-          {hasPermission('view_update_tasks') && (
-            <button 
-              onClick={e => {
-                e.stopPropagation();
-                const newStatus = task.status === 'Pending' ? 'In Progress' 
-                                : task.status === 'In Progress' ? 'Completed' : 'Pending';
-                handleUpdateTaskStatus(task.id, newStatus);
-              }}
-              className="p-1 hover:bg-white/10 rounded"
-              title="Update Status"
-            ><CheckCircle className="w-3 h-3 text-gray-400" /></button>
-          )}
-          {hasPermission('create_edit_delete_tasks') && (
-            <button 
-              onClick={e => { e.stopPropagation(); handleDeleteTask(task.id); }}
-              className="p-1 hover:bg-white/10 rounded"
-              title="Delete Task"
-            ><Trash2 className="w-3 h-3 text-red-400" /></button>
-          )}
-        </div>
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="text-white font-semibold text-base truncate">{task.title}</h3>
+        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>{task.status}</span>
       </div>
-      <p className="text-gray-300 text-xs mb-3 line-clamp-2">{task.description}</p>
-      <div className="flex items-center justify-between">
-        <span className={`px-2 py-1 rounded-full text-xs border ${getStatusColor(task.status)}`}>
-          {task.status}
-        </span>
-        <div className="flex items-center text-xs text-gray-400">
-          <User className="w-3 h-3 mr-1" />
-          {task.assignee?.username || task.User?.username || 'Unassigned'}
-        </div>
+      <p className="text-slate-300 text-xs mb-2 line-clamp-2">{task.description}</p>
+      <div className="flex items-center text-xs text-slate-400">
+        <User className="w-3 h-3 mr-1" />
+        {task.assignee?.username || task.User?.username || 'Unassigned'}
+      </div>
+      <div className="flex items-center space-x-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        {hasPermission('create_edit_delete_tasks') && (
+          <button 
+            onClick={e => { e.stopPropagation(); startEditing(task); }}
+            className="p-1 hover:bg-blue-500/10 rounded"
+            title="Edit Task"
+          ><Edit3 className="w-4 h-4 text-blue-400" /></button>
+        )}
+        {hasPermission('view_update_tasks') && (
+          <button 
+            onClick={e => {
+              e.stopPropagation();
+              const newStatus = task.status === 'Pending' ? 'In Progress' 
+                              : task.status === 'In Progress' ? 'Completed' : 'Pending';
+              handleUpdateTaskStatus(task.id, newStatus);
+            }}
+            className="p-1 hover:bg-green-500/10 rounded"
+            title="Update Status"
+          ><CheckCircle className="w-4 h-4 text-green-400" /></button>
+        )}
+        {hasPermission('create_edit_delete_tasks') && (
+          <button 
+            onClick={e => { e.stopPropagation(); handleDeleteTask(task.id); }}
+            className="p-1 hover:bg-red-500/10 rounded"
+            title="Delete Task"
+          ><Trash2 className="w-4 h-4 text-red-400" /></button>
+        )}
       </div>
     </div>
   );
@@ -676,8 +670,15 @@ export default function ProjectBoard() {
 
       {/* Create/Edit Task Modal */}
       {(showCreateTask || editingTask) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-2xl p-6 max-w-md w-full">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-slate-900 rounded-2xl p-8 shadow-2xl w-full max-w-md relative">
+            <button
+              type="button"
+              onClick={() => { setShowCreateTask(false); setEditingTask(null); }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+            >
+              <X className="w-6 h-6" />
+            </button>
             <h2 className="text-xl font-bold text-white mb-4">
               {editingTask ? 'Edit Task' : 'Create New Task'}
             </h2>
@@ -689,7 +690,7 @@ export default function ProjectBoard() {
                     type="text"
                     value={taskForm.title}
                     onChange={e => setTaskForm(p => ({ ...p, title: e.target.value }))}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-white"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500/30 focus:outline-none"
                     required
                   />
                 </div>
@@ -698,7 +699,7 @@ export default function ProjectBoard() {
                   <textarea
                     value={taskForm.description}
                     onChange={e => setTaskForm(p => ({ ...p, description: e.target.value }))}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-white"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500/30 focus:outline-none"
                     rows="3"
                   />
                 </div>
@@ -707,7 +708,7 @@ export default function ProjectBoard() {
                   <select
                     value={taskForm.status}
                     onChange={e => setTaskForm(p => ({ ...p, status: e.target.value }))}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-white"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500/30 focus:outline-none"
                   >
                     <option>Pending</option>
                     <option>In Progress</option>
@@ -719,7 +720,7 @@ export default function ProjectBoard() {
                   <select
                     value={taskForm.assigneeId}
                     onChange={e => setTaskForm(p => ({ ...p, assigneeId: e.target.value }))}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-white"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500/30 focus:outline-none"
                   >
                     <option value="">None</option>
                     {users.map(u => (
