@@ -12,8 +12,23 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://task-manager-ehbh.onrender.com', // your deployed frontend
+  'https://YOUR-NEW-FRONTEND-URL.onrender.com' // add your actual deployed frontend URL if different
+];
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: function(origin, callback) {
+    // allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
