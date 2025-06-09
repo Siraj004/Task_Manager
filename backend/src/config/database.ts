@@ -14,6 +14,12 @@ export const sequelize = new Sequelize({
   database: DB_NAME,
   username: DB_USER,
   password: DB_PASSWORD,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
+  }
 });
 
 export const connectDB = async () => {
