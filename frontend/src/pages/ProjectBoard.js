@@ -106,11 +106,7 @@ export default function ProjectBoard() {
     try {
       // Fetch project by ID
       const res = await api.get(`/projects/${id}`);
-      if (!res.ok) {
-        if (res.status === 404) throw new Error('Project not found or access denied');
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
-      const projectData = await res.json();
+      const projectData = res.data;
       setProjectName(projectData.name || '');
       setProjectRole(projectData.role || '');
 
@@ -118,13 +114,7 @@ export default function ProjectBoard() {
       if (hasPermission('assign_users') || hasPermission('manage_users')) {
         try {
           const usersRes = await api.get('/admin/users');
-          if (usersRes.ok) {
-            const usersData = await usersRes.json();
-            setUsers(usersData);
-          } else {
-            // If not authorized to fetch users, ignore
-            setUsers([]);
-          }
+          setUsers(usersRes.data);
         } catch (err) {
           console.warn("Could not fetch users list:", err);
           setUsers([]);
