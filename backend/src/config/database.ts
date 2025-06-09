@@ -3,8 +3,10 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 const {
-  DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
+  DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD, NODE_ENV
 } = process.env;
+
+const isProduction = NODE_ENV === 'production';
 
 // Configure Sequelize to connect to PostgreSQL
 export const sequelize = new Sequelize({
@@ -14,12 +16,14 @@ export const sequelize = new Sequelize({
   database: DB_NAME,
   username: DB_USER,
   password: DB_PASSWORD,
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false
+  ...(isProduction && {
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
     }
-  }
+  })
 });
 
 export const connectDB = async () => {

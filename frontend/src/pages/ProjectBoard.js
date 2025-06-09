@@ -8,128 +8,47 @@ import {
   Save, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 // Assuming TaskService is a separate module to handle API calls for tasks
 // For demonstration, we define TaskService here (could be in src/services/TaskService.js)
-const API_BASE = 'http://localhost:5000/api';
 
 /**
  * TaskService: handles task-related API calls
  */
 class TaskService {
   static async getAllTasks() {
-    const token = localStorage.getItem('accessToken');
-    const res = await fetch(`${API_BASE}/tasks`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    if (!res.ok) {
-      if (res.status === 401) throw new Error('Authentication failed');
-      if (res.status === 403) throw new Error('Forbidden');
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    return res.json();
+    const res = await api.get('/tasks');
+    return res.data;
   }
 
   static async getTaskById(taskId) {
-    const token = localStorage.getItem('accessToken');
-    const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    if (!res.ok) {
-      if (res.status === 404) throw new Error('Task not found');
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    return res.json();
+    const res = await api.get(`/tasks/${taskId}`);
+    return res.data;
   }
 
   static async createTask(taskData) {
-    const token = localStorage.getItem('accessToken');
-    const res = await fetch(`${API_BASE}/tasks`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(taskData)
-    });
-    if (!res.ok) {
-      if (res.status === 403) throw new Error('Not authorized to create tasks');
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    return res.json();
+    const res = await api.post('/tasks', taskData);
+    return res.data;
   }
 
   static async updateTask(taskId, taskData) {
-    const token = localStorage.getItem('accessToken');
-    const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(taskData)
-    });
-    if (!res.ok) {
-      if (res.status === 404) throw new Error('Task not found');
-      if (res.status === 403) throw new Error('Not authorized to update task');
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    return res.json();
+    const res = await api.put(`/tasks/${taskId}`, taskData);
+    return res.data;
   }
 
   static async deleteTask(taskId) {
-    const token = localStorage.getItem('accessToken');
-    const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    if (!res.ok) {
-      if (res.status === 404) throw new Error('Task not found');
-      if (res.status === 403) throw new Error('Not authorized to delete task');
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    // DELETE returns 204 No Content if successful
+    await api.delete(`/tasks/${taskId}`);
     return null;
   }
 
   static async markAsTested(taskId) {
-    const token = localStorage.getItem('accessToken');
-    const res = await fetch(`${API_BASE}/tasks/${taskId}/tested`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    if (!res.ok) {
-      if (res.status === 403) throw new Error('Not authorized to mark tested');
-      if (res.status === 404) throw new Error('Task not found');
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    return res.json();
+    const res = await api.post(`/tasks/${taskId}/tested`);
+    return res.data;
   }
 
   static async addComment(taskId, text) {
-    const token = localStorage.getItem('accessToken');
-    const res = await fetch(`${API_BASE}/tasks/${taskId}/comments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ text })
-    });
-    if (!res.ok) {
-      if (res.status === 403) throw new Error('Not authorized to add comments');
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    return res.json();
+    const res = await api.post(`/tasks/${taskId}/comments`, { text });
+    return res.data;
   }
 }
 
@@ -186,12 +105,7 @@ export default function ProjectBoard() {
     if (!id) return;
     try {
       // Fetch project by ID
-      const res = await fetch(`${API_BASE}/projects/${id}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
+      const res = await api.get(`/projects/${id}`);
       if (!res.ok) {
         if (res.status === 404) throw new Error('Project not found or access denied');
         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
@@ -203,12 +117,7 @@ export default function ProjectBoard() {
       // If user can assign users or manage users, fetch all users for assignee list
       if (hasPermission('assign_users') || hasPermission('manage_users')) {
         try {
-          const usersRes = await fetch(`${API_BASE}/admin/users`, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            }
-          });
+          const usersRes = await api.get('/admin/users');
           if (usersRes.ok) {
             const usersData = await usersRes.json();
             setUsers(usersData);

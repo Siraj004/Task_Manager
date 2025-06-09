@@ -1,21 +1,14 @@
 // src/services/AuthService.js
-const API_URL = '/api/auth';
+import api from './api';
 
 const AuthService = {
   // Perform login and return user data with token
   login: async ({ username, password }) => {
-  const response = await fetch(`${API_URL}/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
+    const response = await api.post('/auth/login', { username, password });
+    return response.data;
+  },
 
-    if (!response.ok) {
-      throw new Error('Login request failed');
-    }
-    // Expecting response JSON: { user: {...}, token: '...' }
-    return await response.json();
-  }
+  // You can add more methods here as needed (register, logout, etc.)
 };
 
 export default AuthService;
