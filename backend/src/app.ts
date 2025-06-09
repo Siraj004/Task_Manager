@@ -15,7 +15,7 @@ app.use(cookieParser());
 
 const allowedOrigins = [
    'http://localhost:3000',
-       'https://your-frontend.onrender.com'
+   'https://task-manager-ehbh.onrender.com'
 ];
 
 app.use(cors({
