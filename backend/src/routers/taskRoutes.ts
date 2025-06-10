@@ -13,6 +13,7 @@ import {
 
 import { verifyJWT } from '../middlewares/authMiddleware';
 import { authorizeRoles } from '../middlewares/roleMiddleware';
+import { cache } from '../utils/cache';
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ router.get(
   '/',
   verifyJWT,
   authorizeRoles(['Admin', 'Project Manager', 'Developer', 'Tester', 'Viewer']),
+  cache.cacheMiddleware(300), // Cache for 5 minutes
   listTasks
 );
 
@@ -33,6 +35,7 @@ router.get(
   '/:id',
   verifyJWT,
   authorizeRoles(['Admin', 'Project Manager', 'Developer', 'Tester', 'Viewer']),
+  cache.cacheMiddleware(300), // Cache for 5 minutes
   getTaskById
 );
 

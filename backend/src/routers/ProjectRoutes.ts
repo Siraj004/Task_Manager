@@ -1,29 +1,21 @@
-// backend/routers/taskRoutes.ts
+// backend/routers/projectRoutes.ts
 import express from 'express';
 import {
-  createTask, updateTask, deleteTask,
-  listTasks, getTaskById, markTested, addComment
-} from '../controllers/taskController';
+  createProject,
+  deleteProject,
+  listProjects,
+  getProjectById
+} from '../controllers/projectController';
 import { verifyJWT } from '../middlewares/authMiddleware';
 import { authorizeRoles } from '../middlewares/roleMiddleware';
-import { getProjectById } from '../controllers/projectController';
+import { cache } from '../utils/cache';
 
 const router = express.Router();
 
-// Tasks: list (with optional project filter) and create
-router.get('/', verifyJWT, listTasks);
-router.post('/', verifyJWT, authorizeRoles(['Admin', 'Project Manager']), createTask);
-
-// Task detail, update, delete
-// In projectRoutes.ts:
-router.get('/:id', verifyJWT, authorizeRoles(['Admin','Project Manager','Developer','Tester','Viewer']), getProjectById);
-router.put('/:id', verifyJWT, authorizeRoles(['Admin', 'Project Manager', 'Developer', 'Tester']), updateTask);
-router.delete('/:id', verifyJWT, authorizeRoles(['Admin', 'Project Manager']), deleteTask);
-
-// Mark as tested
-router.post('/:id/test', verifyJWT, authorizeRoles(['Admin', 'Tester']), markTested);
-
-// Add comment
-router.post('/:id/comments', verifyJWT, addComment);
+// Project routes
+router.get('/', verifyJWT, cache.cacheMiddleware(300), listProjects); // Cache for 5 minutes
+router.post('/', verifyJWT, authorizeRoles(['Admin', 'Project Manager']), createProject);
+router.get('/:id', verifyJWT, authorizeRoles(['Admin','Project Manager','Developer','Tester','Viewer']), cache.cacheMiddleware(300), getProjectById);
+router.delete('/:id', verifyJWT, authorizeRoles(['Admin', 'Project Manager']), deleteProject);
 
 export default router;
