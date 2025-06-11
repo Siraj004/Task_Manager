@@ -35,6 +35,7 @@ export const SocketProvider = ({ children }) => {
     if (user && token) {
       console.log('🚀 Initializing socket for user:', user.username);
       
+      // Use the deployed backend URL for Render, or fallback to localhost for local dev
       const socketInstance = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000', {
         auth: { token: token },
         transports: ['websocket', 'polling']

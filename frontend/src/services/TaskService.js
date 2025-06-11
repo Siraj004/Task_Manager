@@ -2,7 +2,7 @@
 import api from './api';
 
 const TaskService = {
-  // Fetch all tasks from backend
+  // Fetch all tasks for a project from backend
   getTasks: async (projectId) => {
     const response = await api.get(`/tasks?projectId=${projectId}`);
     return response.data;
