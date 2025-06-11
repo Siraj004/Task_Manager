@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { User, Role } from '../models';
 import { cache } from '../utils/cache';
+import Notification from '../models/Notification';
 
 // List all users (with roles) – Admin only
 export const listUsers = async (_req: Request, res: Response) => {
@@ -25,4 +26,18 @@ export const updateUserRoles = async (req: Request, res: Response) => {
   await user.setRoles(roleInstances);
   await cache.del('admin:all_users'); 
   res.json({ message: 'User roles updated' });
+};
+
+export const getNotifications = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id;
+    const notifications = await Notification.findAll({
+      where: { userId },
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(notifications);
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({ message: 'Error fetching notifications' });
+  }
 };

@@ -1,3 +1,14 @@
+import React, { useState, useEffect } from 'react';
+import {
+  User, Settings, Eye, Code, TestTube, Shield, ArrowRight,
+  Edit3, MessageSquare, CheckCircle, LogOut, Zap
+} from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { useSocket } from '../context/SocketContext';
+import { toast } from 'react-hot-toast';
+import api from '../services/api';
+
 const StatsCard = ({ icon, title, value, subtitle, color = "from-blue-500/20 to-purple-500/20" }) => (
     <div className={`p-6 rounded-2xl bg-gradient-to-br ${color} border border-white/10 backdrop-blur-sm hover:border-white/20 transition-all duration-300`}>
       <div className="flex items-center justify-between mb-4">
@@ -9,14 +20,7 @@ const StatsCard = ({ icon, title, value, subtitle, color = "from-blue-500/20 to-
       <div className="text-sm text-slate-300 mb-1">{title}</div>
       <div className="text-xs text-slate-400">{subtitle}</div>
     </div>
-  );import React, { useState, useEffect } from 'react';
-import {
-  User, Settings, Eye, Code, TestTube, Shield, ArrowRight,
-  Edit3, MessageSquare, CheckCircle, LogOut, Zap
-} from 'lucide-react';
-
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+  );
 
 const rolePermissions = {
   'Admin': ['manage_users', 'assign_roles', 'create_delete_projects', 'create_edit_delete_tasks', 'assign_users', 'view_update_tasks', 'add_comments', 'mark_tested'],
@@ -52,6 +56,49 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const { socket } = useSocket();
+
+  // Join project room 1 for notifications
+  useEffect(() => {
+    if (socket && user) {
+      socket.emit('joinProject', 1);
+      return () => socket.emit('leaveProject', 1);
+    }
+  }, [socket, user]);
+
+  useEffect(() => {
+    // Socket notification handling
+    if (socket) {
+      socket.on('newTask', (data) => {
+        toast.success(`New task created: ${data.task?.title}`, {
+          duration: 5000,
+          position: 'top-right',
+        });
+      });
+
+      socket.on('taskUpdated', (data) => {
+        toast.info(`Task updated: ${data.title}`, {
+          duration: 5000,
+          position: 'top-right',
+        });
+      });
+
+      socket.on('taskDeleted', (data) => {
+        toast.error(`Task deleted: ${data.title}`, {
+          duration: 5000,
+          position: 'top-right',
+        });
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.off('newTask');
+        socket.off('taskUpdated');
+        socket.off('taskDeleted');
+      }
+    };
+  }, [socket]);
 
   useEffect(() => {
     // Wait for user data to be available
@@ -71,6 +118,27 @@ export default function Dashboard() {
 
     return () => clearTimeout(fallbackTimer);
   }, []);
+
+  // Fetch persistent notifications on dashboard load
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await api.get('/admin/notifications');
+        if (Array.isArray(res.data)) {
+          res.data.forEach(n => {
+            toast(n.message, {
+              icon: n.type === 'task_created' ? '📝' : '🔔',
+              duration: 5000,
+              position: 'top-right',
+            });
+          });
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    if (user) fetchNotifications();
+  }, [user]);
 
   const sampleProject = {
     id: 1,
@@ -185,19 +253,6 @@ export default function Dashboard() {
     </nav>
   );
 
-  const StatsCard = ({ icon, title, value, subtitle, color = "from-blue-500/20 to-purple-500/20" }) => (
-    <div className={`p-6 rounded-2xl bg-gradient-to-br ${color} border border-white/10 backdrop-blur-sm hover:border-white/20 transition-all duration-300`}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-2 bg-white/10 rounded-lg">
-          {icon}
-        </div>
-      </div>
-      <div className="text-2xl font-bold text-white mb-1">{value}</div>
-      <div className="text-sm text-slate-300 mb-1">{title}</div>
-      <div className="text-xs text-slate-400">{subtitle}</div>
-    </div>
-  );
-
   const PermissionCard = ({ label, icon, has, description }) => (
     <div className={`p-4 rounded-xl border backdrop-blur-sm transition-all duration-300 ${
       has 
@@ -251,8 +306,6 @@ export default function Dashboard() {
             and deliver exceptional results with our AI-powered platform.
           </p>
         </div>
-
-
 
         {/* Permissions Section */}
         <div className="mb-16">

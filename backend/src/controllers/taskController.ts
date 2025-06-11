@@ -1,7 +1,7 @@
-// backend/controllers/taskController.ts
 import { Request, Response } from 'express';
 import { Task, Comment, User, Project } from '../models';
 import { cache } from '../utils/cache';
+import Notification from '../models/Notification';
 
 // ✅ Helper function to invalidate task-related caches
 const invalidateTaskCaches = async (taskId?: string) => {
@@ -11,10 +11,12 @@ const invalidateTaskCaches = async (taskId?: string) => {
   }
 };
 
-// ✅ Create a task
+// ✅ Create a task with Socket.IO broadcast
 export const createTask = async (req: Request, res: Response) => {
   try {
     const { title, description, status = 'Pending', projectId, assigneeId } = req.body;
+    const userId = (req as any).user.id;
+    const username = (req as any).user.username;
 
     const project = await Project.findByPk(projectId);
     if (!project) return res.status(404).json({ message: 'Project not found' });
@@ -40,6 +42,30 @@ export const createTask = async (req: Request, res: Response) => {
 
     await invalidateTaskCaches();
 
+    const io = req.app.get('io');
+    if (io && typeof io.broadcastTaskCreated === 'function') {
+      io.broadcastTaskCreated(
+        project.id,
+        taskWithDetails,
+        username,
+        userId
+      );
+    }
+
+    // Find all users in the project
+    if (project) {
+      const members = await (project as any).getUsers();
+      for (const user of members) {
+        if (user.id !== (req as any).user.id) {
+          await Notification.create({
+            userId: user.id,
+            type: 'task_created',
+            message: `Task created: ${task.title}`
+          });
+        }
+      }
+    }
+
     res.status(201).json(taskWithDetails);
   } catch (error) {
     console.error('Error creating task:', error);
@@ -47,25 +73,39 @@ export const createTask = async (req: Request, res: Response) => {
   }
 };
 
-// ✅ Update a task
+// ✅ Update task with broadcast
 export const updateTask = async (req: Request, res: Response) => {
   try {
+    const userId = (req as any).user.id;
+    const username = (req as any).user.username;
     const task = await Task.findByPk(req.params.id);
     if (!task) return res.status(404).json({ message: 'Task not found' });
 
+    const oldStatus = task.status;
     await task.update(req.body);
 
     const updatedTask = await Task.findByPk(task.id, {
       include: [
         { model: User, as: 'assignee', attributes: ['id', 'username'] },
-        { model: Comment, include: [{ model: User, attributes: ['username'] }] }
+        {
+          model: Comment,
+          include: [{ model: User, attributes: ['username'] }],
+          order: [['createdAt', 'DESC']]
+        }
       ]
     });
 
     await invalidateTaskCaches(req.params.id);
 
     const io = req.app.get('io');
-    if (io) io.emit('taskUpdated', updatedTask);
+    if (io && typeof io.broadcastTaskUpdated === 'function') {
+      io.broadcastTaskUpdated(
+        task.projectId,
+        { ...updatedTask?.toJSON(), oldStatus, updatedAt: new Date() },
+        username,
+        userId
+      );
+    }
 
     res.json(updatedTask);
   } catch (error) {
@@ -74,7 +114,7 @@ export const updateTask = async (req: Request, res: Response) => {
   }
 };
 
-// ✅ Delete a task
+// ✅ Delete task
 export const deleteTask = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
@@ -100,7 +140,11 @@ export const listTasks = async (_req: Request, res: Response) => {
   const tasks = await Task.findAll({
     include: [
       { model: User, as: 'assignee', attributes: ['id', 'username'] },
-      { model: Comment, include: [{ model: User, attributes: ['username'] }] }
+      {
+        model: Comment,
+        include: [{ model: User, attributes: ['username'] }],
+        order: [['createdAt', 'DESC']]
+      }
     ]
   });
 
@@ -119,7 +163,8 @@ export const getTaskById = async (req: Request, res: Response) => {
       { model: User, as: 'assignee', attributes: ['id', 'username'] },
       {
         model: Comment,
-        include: [{ model: User, attributes: ['username'] }]
+        include: [{ model: User, attributes: ['username'] }],
+        order: [['createdAt', 'DESC']]
       }
     ]
   });
@@ -130,22 +175,40 @@ export const getTaskById = async (req: Request, res: Response) => {
   res.json(task);
 };
 
-// ✅ Mark task as tested
+// ✅ Mark task as tested (status = 'tested')
 export const markTested = async (req: Request, res: Response) => {
   try {
+    const userId = (req as any).user.id;
+    const username = (req as any).user.username;
     const task = await Task.findByPk(req.params.id);
     if (!task) return res.status(404).json({ message: 'Task not found' });
 
+    const oldStatus = task.status;
     await task.update({ status: 'tested' });
 
     const updatedTask = await Task.findByPk(task.id, {
       include: [
         { model: User, as: 'assignee', attributes: ['id', 'username'] },
-        { model: Comment, include: [{ model: User, attributes: ['username'] }] }
+        {
+          model: Comment,
+          include: [{ model: User, attributes: ['username'] }],
+          order: [['createdAt', 'DESC']]
+        }
       ]
     });
 
     await invalidateTaskCaches(req.params.id);
+
+    const io = req.app.get('io');
+    if (io && typeof io.broadcastTaskUpdated === 'function') {
+      io.broadcastTaskUpdated(
+        task.projectId,
+        { ...updatedTask?.toJSON(), oldStatus, updatedAt: new Date() },
+        username,
+        userId
+      );
+    }
+
     res.json(updatedTask);
   } catch (error) {
     console.error(error);
@@ -153,12 +216,13 @@ export const markTested = async (req: Request, res: Response) => {
   }
 };
 
-// ✅ Add comment to a task
+// ✅ Add comment to task
 export const addComment = async (req: Request, res: Response) => {
   try {
     const { text } = req.body;
     const taskId = req.params.id;
     const userId = (req as any).user.id;
+    const username = (req as any).user.username;
 
     if (!text) return res.status(400).json({ message: 'Comment text is required' });
 
@@ -172,6 +236,22 @@ export const addComment = async (req: Request, res: Response) => {
     });
 
     await invalidateTaskCaches(taskId);
+
+    const io = req.app.get('io');
+    if (io && typeof io.broadcastCommentAdded === 'function') {
+      io.broadcastCommentAdded(
+        task.projectId,
+        {
+          comment: commentWithUser,
+          taskId,
+          taskTitle: task.title,
+          userId
+        },
+        username,
+        userId
+      );
+    }
+
     res.status(201).json(commentWithUser);
   } catch (error) {
     console.error(error);

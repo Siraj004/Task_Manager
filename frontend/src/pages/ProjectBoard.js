@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { useSocket } from '../context/SocketContext';
+
 // Assuming TaskService is a separate module to handle API calls for tasks
 // For demonstration, we define TaskService here (could be in src/services/TaskService.js)
 
@@ -92,7 +94,7 @@ export default function ProjectBoard() {
   const [loading, setLoading] = useState(true);         // Overall loading state (project + tasks)
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);      // Indicates create/edit in progress
-
+ const { socket, addNotification } = useSocket();
   // Check if current user's role has a permission
   const hasPermission = (permission) => {
     if (!user?.roles?.length) return false;
@@ -152,29 +154,45 @@ export default function ProjectBoard() {
   }, [id, selectedTask]);
 
   // Fetch data on component mount or when project ID changes
-  useEffect(() => {
-    // Don't fetch until auth is initialized
-    if (authLoading) return;
-    // If user is not authenticated, redirect
-    if (!user) {
-      navigate('/login');
-      return;
+ useEffect(() => {
+  if (authLoading) return;
+  
+  if (!user) {
+    navigate('/login');
+    return;
+  }
+  
+  if (!id) {
+    setError("No project ID provided");
+    setLoading(false);
+    return;
+  }
+  
+  setLoading(true);
+  
+  (async () => {
+    await fetchProjectData();
+    await fetchTasks();
+    setLoading(false);
+  })();
+  
+  // CRITICAL: Make sure socket joins project room
+  if (socket && socket.connected) {
+    console.log('🏠 Joining project room:', id, 'as user:', user.username);
+    socket.emit('joinProject', id);
+    
+    // Test if socket is working
+    socket.emit('test', { message: 'Hello from ' + user.username });
+  }
+  
+  return () => {
+    if (socket) {
+      console.log('🚪 Leaving project room:', id, 'as user:', user.username);
+      socket.emit('leaveProject', id);
     }
-    // Validate project ID
-    if (!id) {
-      setError("No project ID provided");
-      setLoading(false);
-      return;
-    }
-    // Start loading
-    setLoading(true);
-    // Fetch project and tasks
-    (async () => {
-      await fetchProjectData();
-      await fetchTasks();
-      setLoading(false);
-    })();
-  }, [id, authLoading, navigate, user, fetchProjectData, fetchTasks]);
+  };
+}, [id, authLoading, navigate, user, socket]);
+
 
   // Show loading state
   if (authLoading || loading) {
@@ -224,32 +242,50 @@ export default function ProjectBoard() {
   /**
    * Handler: Create a new task
    */
-  const handleCreateTask = async (e) => {
-    e.preventDefault();
-    if (!hasPermission('create_edit_delete_tasks')) {
-      alert('Not authorized to create tasks');
-      return;
-    }
-    setIsSaving(true);
-    try {
-      const newTask = await TaskService.createTask({
-        ...taskForm,
+ const handleCreateTask = async (e) => {
+  e.preventDefault();
+
+  if (!hasPermission('create_edit_delete_tasks')) {
+    alert('Not authorized to create tasks');
+    return;
+  }
+
+  setIsSaving(true);
+
+  try {
+    const newTask = await TaskService.createTask({
+      ...taskForm,
+      projectId: parseInt(id),
+      assigneeId: taskForm.assigneeId ? parseInt(taskForm.assigneeId) : null
+    });
+
+    console.log("Task created:", newTask);
+
+    // ✅ Emit real-time socket event
+    if (socket) {
+      socket.emit('newTask', {
         projectId: parseInt(id),
-        assigneeId: taskForm.assigneeId ? parseInt(taskForm.assigneeId) : null
+        projectName,
+        title: newTask.title,
+        task: newTask
       });
-      console.log("Task created:", newTask);
-      // Reset form and close modal
-      setTaskForm({ title:'', description:'', status:'Pending', assigneeId:'' });
-      setShowCreateTask(false);
-      // Refresh tasks list
-      await fetchTasks();
-    } catch (err) {
-      console.error("Create task error:", err);
-      alert(err.message || 'Failed to create task');
-    } finally {
-      setIsSaving(false);
     }
-  };
+
+    // Reset form and close modal
+    setTaskForm({ title: '', description: '', status: 'Pending', assigneeId: '' });
+    setShowCreateTask(false);
+
+    // Refresh tasks list
+    await fetchTasks();
+
+  } catch (err) {
+    console.error("Create task error:", err);
+    alert(err.message || 'Failed to create task');
+  } finally {
+    setIsSaving(false);
+  }
+};
+
 
   /**
    * Handler: Edit an existing task
@@ -273,6 +309,16 @@ export default function ProjectBoard() {
       // Refresh tasks and selected task
       await fetchTasks();
       setSelectedTask(updatedTask);
+
+      // ✅ Emit real-time socket event
+      if (socket) {
+        socket.emit('taskUpdated', {
+          projectId: parseInt(id),
+          projectName,
+          title: updatedTask.title,
+          task: updatedTask
+        });
+      }
     } catch (err) {
       console.error("Edit task error:", err);
       alert(err.message || 'Failed to update task');
@@ -297,6 +343,16 @@ export default function ProjectBoard() {
       if (selectedTask?.id === taskId) setSelectedTask(null);
       // Refresh list
       await fetchTasks();
+
+      // ✅ Emit real-time socket event
+      if (socket) {
+        socket.emit('taskDeleted', {
+          projectId: parseInt(id),
+          projectName,
+          title: selectedTask?.title || 'Task',
+          taskId
+        });
+      }
     } catch (err) {
       console.error("Delete task error:", err);
       alert(err.message || 'Failed to delete task');

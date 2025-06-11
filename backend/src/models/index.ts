@@ -7,6 +7,8 @@ import { RolePermission } from './RolePermission';
 import { Project } from './Project';
 import { Task } from './Task';
 import { Comment } from './Comment';
+import Notification from './Notification';
+import { ProjectMember } from './ProjectMember';
 import { seedRBAC } from '../utils/seedRBAC';
 
 
@@ -30,6 +32,10 @@ Comment.belongsTo(Task);
 User.hasMany(Comment);
 Comment.belongsTo(User);
 
+// Project-User (membership) associations
+Project.belongsToMany(User, { through: ProjectMember });
+User.belongsToMany(Project, { through: ProjectMember });
+
 export const initModels = async () => {
   await sequelize.sync({alter : true 
     ,
@@ -45,4 +51,6 @@ export {
   Project,
   Task,
   Comment,
+  Notification,
+  ProjectMember,
 };
