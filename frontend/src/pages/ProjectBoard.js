@@ -54,7 +54,7 @@ class TaskService {
   }
 
   static async getTasks(projectId) {
-    const res = await api.get(`/projects/${projectId}/tasks`);
+    const res = await api.get(`/tasks?projectId=${projectId}`);
     return res.data;
   }
 }
