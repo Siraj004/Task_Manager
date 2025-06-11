@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 import app from './app';
 import http from 'http';
-import { initializeSocket } from '../socket/socketServer'; // ✅ Adjust path if needed
+import { initializeSocket } from './socket/socketServer'; // ✅ Adjust path if needed
 import { connectDB } from './config/database';
 import { seedRBAC } from './utils/seedRBAC';
 import { seedAllData } from './utils/seedAllData';
