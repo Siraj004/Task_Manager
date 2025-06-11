@@ -1,158 +1,110 @@
+## 📌 TeamTasker – Role-Based Task Management System
 
-# 🧠 TeamTasker – Project Management Web App
-
-A full-stack Role-Based Task & Project Management System built using **Node.js, Express, PostgreSQL, Redis, and React**. This application includes role-based access control (RBAC), real-time collaboration via **Socket.IO**, and performance improvements using **Redis (Stash)** for intelligent caching.
-
----
-
-## 🚀 Getting Started
-
-### Backend
-
-1. Navigate to the backend folder:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
-
-### Frontend
-
-1. Navigate to the frontend folder:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the React app:
-   ```bash
-   npm start
-   ```
+**Live Demo:** 🌐 [https://task-manager-ehbh.onrender.com/](https://task-manager-ehbh.onrender.com/)
 
 ---
 
-## ⚙️ Tech Stack
+### 📖 Overview
 
-### Backend
-- **Node.js**, **Express.js**
-- **TypeScript**
-- **PostgreSQL** (ORM: Sequelize)
-- **Redis (Stash)** for caching tasks and comments
-- **Socket.IO** for real-time task updates and notifications
-- **RBAC**: Role-Based Access Control (Admin, Manager, Member)
-- **JWT Authentication**
-
-### Frontend
-- **React.js**
-- **Tailwind CSS**
-- **Context API** for auth and socket state
-- **Socket.IO Client** for live updates
-- **Global Notification Popup**
+**TeamTasker** is a full-stack, role-based task and project management system developed as an internship project for **LarkLabs.ai**.
+It supports project creation, task assignment, commenting, and fine-grained **RBAC (Role-Based Access Control)** with real-time notifications using **Socket.IO** and **Redis cache** for performance optimization.
 
 ---
 
-## 📁 Project Structure
+### 🛠 Tech Stack
 
-### Backend (`/backend/src`)
-```
-.
-├── config/            # DB and Redis config
-├── controllers/       # Route handlers (auth, tasks, comments)
-├── middlewares/       # Auth, roles, permissions
-├── models/            # Sequelize models
-├── routes/            # Route definitions
-├── socket/            # Socket.IO server setup
-├── utils/             # Seeder, Redis cache logic
-├── app.ts             # Express app setup
-├── index.ts           # Server entry with socket + DB init
+#### ✅ Backend
+
+* Node.js + Express.js
+* TypeScript
+* PostgreSQL + Sequelize ORM
+* Redis (for caching using Stash pattern)
+* Socket.IO (real-time updates)
+* JWT Authentication
+* Role-Based Access Control (RBAC)
+* REST API
+
+#### ✅ Frontend
+
+* React.js + Vite
+* Tailwind CSS
+* Context API
+* Socket.IO Client
+* Protected Routing
+
+---
+
+### ⚙️ Setup Instructions
+
+#### ▶️ Frontend
+
+```bash
+cd frontend
+npm install
+npm start
 ```
 
-### Frontend (`/frontend/src`)
-```
-.
-├── components/        # Reusable UI components
-├── context/           # Auth & Socket contexts
-├── pages/             # Main views (Dashboard, ProjectBoard, etc.)
-├── services/          # API handlers
-├── App.js             # Routes and context wrapper
+#### ▶️ Backend
+
+```bash
+cd backend
+npm install
+npm run dev
 ```
 
----
-
-## 📡 Real-Time Features
-
-- **Live Task Creation**  
-- **Live Task Updates and Status Changes**  
-- **Real-Time Comments on Tasks**  
-- **Global Notification Popup with Count**  
-- **Per-Project Room Broadcasting**  
-- **Per-User Notification for Task Assignments**
+> ✅ Make sure to set up `.env` files in both frontend and backend with proper configuration (DB URL, PORT, JWT\_SECRET, etc.)
 
 ---
 
-## 🧠 Caching with Redis
+### 🧠 Features
 
-- **Redis** is used to cache:
-  - Project tasks
-  - Task comments
-- Cache is **invalidated** on:
-  - Task create/update
-  - Comment add/delete
-
----
-
-## 🙋‍♂️ Contributor
-
-> 👨‍💻 **Sirajudeen G**  
-> 🏢 Intern at [LarkLabs.ai](https://larklabs.ai)
+* ✅ Login / Register with JWT Auth
+* ✅ Create & manage Projects and Tasks
+* ✅ Add Comments to Tasks
+* ✅ Assign tasks to users
+* ✅ Admin Panel (RBAC system)
+* ✅ Real-time updates via Socket.IO
+* ✅ Redis Caching using Stash pattern
+* ✅ Global Notification System
+* ✅ Role-based UI rendering
 
 ---
 
-## 📜 .env Configuration
+### 🧾 Folder Structure (Backend Highlights)
 
-Create a `.env` file in `/backend` and `/frontend` root:
-
-### Backend `.env`
-```env
-PORT=5000
-DATABASE_URL=postgres://<user>:<password>@localhost:5432/<dbname>
-JWT_SECRET=your_jwt_secret
-REDIS_URL=redis://localhost:6379
+```
+backend/
+├── src/
+│   ├── config/
+│   ├── controllers/
+│   ├── middlewares/
+│   ├── models/
+│   ├── routers/
+│   ├── socket/
+│   └── utils/
 ```
 
-### Frontend `.env`
-```env
-REACT_APP_API_URL=http://localhost:5000
+### 🧾 Folder Structure (Frontend Highlights)
+
+```
+frontend/src/
+├── components/
+├── context/
+├── pages/
+├── services/
+└── App.js, index.js, etc.
 ```
 
 ---
 
-## 📌 Requirements
+### 👤 Contributor
 
-- Node.js v18+
-- PostgreSQL
-- Redis
-- Yarn or npm
-- VS Code with ESLint and Prettier (recommended)
+> **Sirajudeen G**
+> 🧑‍💻 Intern at [LarkLabs.ai](https://larklabs.ai)
 
 ---
 
-## 📷 Screenshots
+### 📌 Deployment
 
-Coming soon...
-
----
-
-## 📄 License
-
-This project is under development as an internal internship project and is not yet licensed for public use.
-
----
+* ✅ **Frontend + Backend deployed together** using **Render**
+* 🌐 [https://task-manager-ehbh.onrender.com/](https://task-manager-ehbh.onrender.com/)
