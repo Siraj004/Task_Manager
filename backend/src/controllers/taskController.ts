@@ -132,12 +132,16 @@ export const deleteTask = async (req: Request, res: Response) => {
 };
 
 // ✅ List all tasks (cached)
-export const listTasks = async (_req: Request, res: Response) => {
-  const cacheKey = 'tasks:all';
-  const cached = await cache.get(cacheKey);
-  if (cached) return res.json(cached);
+export const listTasks = async (req: Request, res: Response) => {
+  const projectId = req.query.projectId;
+  if (!projectId) {
+    return res.status(400).json({ message: 'projectId is required' });
+  }
+
+  // Optionally: Check if user is a member of the project here
 
   const tasks = await Task.findAll({
+    where: { projectId: parseInt(projectId as string) },
     include: [
       { model: User, as: 'assignee', attributes: ['id', 'username'] },
       {
@@ -148,7 +152,6 @@ export const listTasks = async (_req: Request, res: Response) => {
     ]
   });
 
-  await cache.set(cacheKey, tasks, 120);
   res.json(tasks);
 };
 

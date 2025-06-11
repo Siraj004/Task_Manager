@@ -52,6 +52,11 @@ class TaskService {
     const res = await api.post(`/tasks/${taskId}/comments`, { text });
     return res.data;
   }
+
+  static async getTasks(projectId) {
+    const res = await api.get(`/projects/${projectId}/tasks`);
+    return res.data;
+  }
 }
 
 // Permissions mapping for UI (as a reference)
@@ -134,12 +139,11 @@ export default function ProjectBoard() {
   const fetchTasks = useCallback(async () => {
     if (!id) return;
     try {
-      const allTasks = await TaskService.getAllTasks();
-      const filtered = allTasks.filter(t => t.projectId === parseInt(id));
-      setTasks(filtered);
+      const tasks = await TaskService.getTasks(id);
+      setTasks(tasks);
       // If a task is selected, update it from the new list (or clear if deleted)
       if (selectedTask) {
-        const updated = filtered.find(t => t.id === selectedTask.id);
+        const updated = tasks.find(t => t.id === selectedTask.id);
         if (updated) {
           setSelectedTask(updated);
         } else {

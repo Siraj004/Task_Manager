@@ -3,8 +3,8 @@ import api from './api';
 
 const TaskService = {
   // Fetch all tasks from backend
-  getTasks: async () => {
-    const response = await api.get('/tasks');
+  getTasks: async (projectId) => {
+    const response = await api.get(`/tasks?projectId=${projectId}`);
     return response.data;
   },
 
