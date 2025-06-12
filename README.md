@@ -1,110 +1,99 @@
-## 📌 TeamTasker – Role-Based Task Management System
+# Role-Based Project Collaboration Full-Stack System (Team Tasker)
 
-**Live Demo:** 🌐 [https://task-manager-ehbh.onrender.com/](https://task-manager-ehbh.onrender.com/)
-
----
-
-### 📖 Overview
-
-**TeamTasker** is a full-stack, role-based task and project management system developed as an internship project for **LarkLabs.ai**.
-It supports project creation, task assignment, commenting, and fine-grained **RBAC (Role-Based Access Control)** with real-time notifications using **Socket.IO** and **Redis cache** for performance optimization.
+A full-stack project collaboration platform featuring **role-based task management**, **real-time updates**, **RBAC authorization**, and **Redis-powered caching**. Designed to streamline team workflows in engineering/product teams.
 
 ---
 
-### 🛠 Tech Stack
+##  Overview
 
-#### ✅ Backend
-
-* Node.js + Express.js
-* TypeScript
-* PostgreSQL + Sequelize ORM
-* Redis (for caching using Stash pattern)
-* Socket.IO (real-time updates)
-* JWT Authentication
-* Role-Based Access Control (RBAC)
-* REST API
-
-#### ✅ Frontend
-
-* React.js + Vite
-* Tailwind CSS
-* Context API
-* Socket.IO Client
-* Protected Routing
+**TeamTasker** is a web application that enables teams to manage projects, assign tasks, leave comments, and track progress in real time. It supports fine-grained access control for different roles: `Admin`, `Project Manager`, `Developer`, `Tester`, and `Viewer`.If a new person sign up,He/She will automatically get assigned for viewer role
 
 ---
 
-### ⚙️ Setup Instructions
+##  Features
 
-#### ▶️ Frontend
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
-#### ▶️ Backend
-
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-> ✅ Make sure to set up `.env` files in both frontend and backend with proper configuration (DB URL, PORT, JWT\_SECRET, etc.)
+- Role-Based Access Control (RBAC) using custom middleware
+- JWT Authentication for secure sessions
+- Task Creation, Editing, and Commenting with permission-based restrictions
+- Role-specific dashboards and actions
+- Socket.IO integration for live task updates and comment feeds
+- Redis (Stash) caching for faster DB access and reduced load
+- Project-wise task management with assignee filtering
+- Real-time popup notifications for task assignments and updates
+- REST API security with Express middleware chaining
 
 ---
 
-### 🧠 Features
+##  Roles & Permissions
 
-* ✅ Login / Register with JWT Auth
-* ✅ Create & manage Projects and Tasks
-* ✅ Add Comments to Tasks
-* ✅ Assign tasks to users
-* ✅ Admin Panel (RBAC system)
-* ✅ Real-time updates via Socket.IO
-* ✅ Redis Caching using Stash pattern
-* ✅ Global Notification System
-* ✅ Role-based UI rendering
+| Role                | View | Create Tasks | Edit Tasks | Delete Tasks | Comment | Mark as Tested |
+|---------------------|------|--------------|------------|---------------|---------|----------------|
+|   Admin             | ✅   | ✅           | ✅        | ✅           | ✅     | ✅             |
+|   Project Manager   | ✅   | ✅           | ✅        | ✅           | ✅      | ❌            |
+|   Developer         | ✅   | ❌           | ✅        | ❌           | ✅      | ❌            |
+|   Tester            | ✅   | ❌           | ✅        | ❌           | ✅      | ✅            |
+|   Viewer            | ✅   | ❌           | ❌        | ❌           | ❌      | ❌            |
 
 ---
 
-### 🧾 Folder Structure (Backend Highlights)
+##  Tech Stack
 
-```
-backend/
-├── src/
-│   ├── config/
-│   ├── controllers/
-│   ├── middlewares/
-│   ├── models/
-│   ├── routers/
-│   ├── socket/
-│   └── utils/
-```
-
-### 🧾 Folder Structure (Frontend Highlights)
-
-```
-frontend/src/
-├── components/
-├── context/
-├── pages/
-├── services/
-└── App.js, index.js, etc.
-```
+| Layer       | Technology                              |
+|-------------|------------------------------------------|
+| Frontend     | React.js + Tailwind CSS + Shadcn UI     |
+| Backend      | Node.js + Express.js + TypeScript       |
+| Database     | PostgreSQL (via Sequelize ORM)          |
+| Cache        | Redis (via Stash)                       |
+| Auth         | JWT (Access & Refresh Tokens)           |
+| Realtime     | Socket.IO for instant client sync       |
+| Deploy       | Render (Backend & Frontend deployment)  |
 
 ---
 
-### 👤 Contributor
+## Challenges & Solutions
 
-> **Sirajudeen G**
-> 🧑‍💻 Intern at [LarkLabs.ai](https://larklabs.ai)
+ Challenge: Real-Time Task Updates
+Solution: Integrated Socket.IO on both client and server sides to emit and receive events when tasks or comments are created or modified.
+
+Challenge: Repeated DB Hits Slowing Performance
+Solution: Leveraged Redis (Stash) to cache frequent API responses like `/tasks`, reducing latency significantly.
+
+Challenge: Managing Role-Specific Access Dynamically
+Solution: Created centralized `authorizeRoles()` middleware to handle route-level RBAC enforcement without hardcoding in controllers.
 
 ---
 
-### 📌 Deployment
+##  Demo Video
 
-* ✅ **Frontend + Backend deployed together** using **Render**
-* 🌐 [https://task-manager-ehbh.onrender.com/](https://task-manager-ehbh.onrender.com/)
+🎥 **[Watch Demo Video](https://drive.google.com/file/d/1AmeOEKPsNv9XG8-oIDwXHuGa3dEZRqfJ/view?usp=sharing)**
+
+---
+
+## 🖼️ Screenshots
+
+ **[View Screenshot Gallery on Google Drive](https://drive.google.com/drive/folders/1UJihmtl9e0MGBjXmw7NTMsSJilCv1-10?usp=sharing)**
+
+###  Preview Highlights:
+
+- 🔐 Login & Role-Specific Dashboards
+- 📝 Task Assignment and Editing
+- 💬 Real-time Comments via Socket.IO
+- ⚙️ Redis Caching in Action
+- 🔔 Live Notification Popups
+- 👥 Assignee List (only for Admin/PM)
+- 🚫 Permission Denied Alerts for restricted users
+
+---
+
+##  Repository
+
+GitHub Repo: [https://github.com/user/teamtasker]
+---
+
+##  Feedback & Contact
+
+For feedback or contributions, feel free to open issues or reach out via [your-email@example.com](mailto:your-email@example.com)
+
+---
+
+> 📌 *“Fill it out and return it to me if you complete your task.”*
