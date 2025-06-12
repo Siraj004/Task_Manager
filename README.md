@@ -87,13 +87,11 @@ Solution: Created centralized `authorizeRoles()` middleware to handle route-leve
 
 ##  Repository
 
-GitHub Repo: [https://github.com/user/teamtasker]
+GitHub Repo: [https://github.com/Siraj004/Task_Manager]
 ---
 
 ##  Feedback & Contact
 
-For feedback or contributions, feel free to open issues or reach out via [your-email@example.com](mailto:your-email@example.com)
+For feedback or contributions, feel free to open issues or reach out via (sirajudeenghousebasha@gmail.com)
 
----
 
-> 📌 *“Fill it out and return it to me if you complete your task.”*
