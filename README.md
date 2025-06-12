@@ -67,6 +67,14 @@ Solution: Created centralized `authorizeRoles()` middleware to handle route-leve
 
 🎥 **[Watch Demo Video](https://drive.google.com/file/d/1AmeOEKPsNv9XG8-oIDwXHuGa3dEZRqfJ/view?usp=sharing)**
 
+
+---
+
+## 🌐 Live Deployment
+
+🖥️ **Frontend + Backend Live URL**:  
+🔗 [https://task-manager-ehbh.onrender.com](https://task-manager-ehbh.onrender.com)
+
 ---
 
 ## 🖼️ Screenshots
